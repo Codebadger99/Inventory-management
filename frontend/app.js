@@ -1,6 +1,4 @@
-// Configure with window.INVENTORY_API_URL before this file loads, or set
-// localStorage.inventoryApiUrl in the browser console. Defaults to the Nest API.
-const API_BASE = (window.INVENTORY_API_URL || localStorage.getItem('inventoryApiUrl') || 'http://localhost:3000').replace(/\/+$/, '');
+const API_BASE = (window.INVENTORY_API_URL || localStorage.getItem('inventoryApiUrl') || 'https://inventory-management-iuz7.onrender.com').replace(/\/+$/, '');
 const PAGE_SIZE = 10;
 const INVENTORY_CACHE_KEY = 'inventoryManagement.items.v1';
 const PENDING_CACHE_KEY = 'inventoryManagement.pending.v1';

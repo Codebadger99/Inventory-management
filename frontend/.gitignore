@@ -1,0 +1,5 @@
+# Local environment values and generated deploy-time browser config
+.env
+.env.*
+!.env.example
+runtime-config.js

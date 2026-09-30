@@ -7,54 +7,43 @@
     <meta name="theme-color" content="#0c0f0e" />
     <meta name="description" content="A simple, focused inventory management dashboard." />
     <title>Inventory — Management</title>
-    <style>
-        html.booting .app-shell { visibility: hidden; }
-        .startup-screen { position: fixed; z-index: 1000; inset: 0; display: none; place-items: center; padding: 24px; background: #100f0d; color: #eeeae0; font: 16px/1.5 'Segoe UI', Arial, sans-serif; }
-        html.booting .startup-screen { display: grid; }
-        .startup-card { width: min(100%, 420px); padding: 30px; border: 1px solid #34332b; border-radius: 14px; background: #171713; }
-        .startup-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; font-size: 22px; font-weight: 700; }
-        .startup-mark { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid #40533a; border-radius: 11px; background: #20261a; color: #c1ce9c; }
-        .startup-mark svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-        .startup-card h1 { margin: 0 0 5px; font-size: 21px; }
-        .startup-copy { margin: 0 0 22px; color: #b8b4a8; font-size: 14px; }
-        .startup-checks { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
-        .startup-check { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; color: #d0d0c7; }
-        .startup-icon { display: grid; width: 22px; height: 22px; place-items: center; border: 1px solid #45443a; border-radius: 50%; color: #a9a698; font-size: 12px; }
-        .startup-check.is-checking .startup-icon { border: 2px solid #4b4a3f; border-top-color: #c1ce9c; color: transparent; animation: startup-spin .8s linear infinite; }
-        .startup-check.is-ready .startup-icon { border-color: #536542; background: #27301e; color: #d2e4b2; }
-        .startup-check.is-warning .startup-icon { border-color: #69553b; background: #30271b; color: #f0ca8c; }
-        .startup-check strong { display: block; font-size: 14px; }
-        .startup-check small { display: block; margin-top: 1px; color: #9b988e; font-size: 12px; }
-        .startup-actions { display: none; gap: 10px; margin-top: 22px; }
-        .startup-screen.has-error .startup-actions { display: grid; }
-        .startup-actions button { width: 100%; min-height: 44px; border: 1px solid #89996c; border-radius: 7px; background: #bdca97; color: #171a12; font: inherit; font-weight: 700; cursor: pointer; }
-        .startup-actions .startup-continue { border-color: #45443a; background: #21211b; color: #e2dfd5; }
-        @keyframes startup-spin { to { transform: rotate(360deg); } }
-    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link id="font-cdn" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet" media="print">
+    <link id="font-cdn" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap"
+        rel="stylesheet" media="print">
     <link id="app-stylesheet" rel="stylesheet" href="styles.css" />
+    <script src="runtime-config.js" defer></script>
     <script src="app.js" defer></script>
 </head>
 
 <body>
-    <section class="startup-screen" id="startup-screen" role="status" aria-live="polite" aria-label="Preparing inventory">
+    <section class="startup-screen" id="startup-screen" role="status" aria-live="polite"
+        aria-label="Preparing inventory">
         <div class="startup-card">
             <div class="startup-brand">
-                <span class="startup-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 8 9-5 9 5-9 5-9-5Z"/><path d="M5 10v7l7 4 7-4v-7M9 12.5v5M12 14v5M15 12.5v5"/></svg></span>
+                <span class="startup-mark" aria-hidden="true"><svg viewBox="0 0 24 24">
+                        <path d="m3 8 9-5 9 5-9 5-9-5Z" />
+                        <path d="M5 10v7l7 4 7-4v-7M9 12.5v5M12 14v5M15 12.5v5" />
+                    </svg></span>
                 <span>Inventory</span>
             </div>
             <h1 id="startup-title">Getting things ready</h1>
             <p class="startup-copy" id="startup-copy">Checking your connection and preparing your inventory…</p>
             <ul class="startup-checks">
-                <li class="startup-check is-checking" id="check-backend"><span class="startup-icon" aria-hidden="true">·</span><span><strong>Database connection</strong><small>Checking the inventory service</small></span></li>
-                <li class="startup-check is-checking" id="check-font"><span class="startup-icon" aria-hidden="true">·</span><span><strong>Font service</strong><small>Checking the font CDN</small></span></li>
-                <li class="startup-check is-checking" id="check-assets"><span class="startup-icon" aria-hidden="true">·</span><span><strong>App files</strong><small>Loading the interface</small></span></li>
+                <li class="startup-check is-checking" id="check-backend"><span class="startup-icon"
+                        aria-hidden="true">·</span><span><strong>Database connection</strong><small>Checking the
+                            inventory service</small></span></li>
+                <li class="startup-check is-checking" id="check-font"><span class="startup-icon"
+                        aria-hidden="true">·</span><span><strong>Font service</strong><small>Checking the font
+                            CDN</small></span></li>
+                <li class="startup-check is-checking" id="check-assets"><span class="startup-icon"
+                        aria-hidden="true">·</span><span><strong>App files</strong><small>Loading the
+                            interface</small></span></li>
             </ul>
             <div class="startup-actions">
                 <button class="startup-retry" id="startup-retry" type="button">Check again</button>
-                <button class="startup-continue" id="startup-continue" type="button">Continue with saved inventory</button>
+                <button class="startup-continue" id="startup-continue" type="button">Continue with saved
+                    inventory</button>
             </div>
         </div>
     </section>
