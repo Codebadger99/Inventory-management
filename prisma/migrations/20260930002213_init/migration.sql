@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Inventory" ALTER COLUMN "size" SET DATA TYPE BIGINT;
