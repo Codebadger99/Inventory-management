@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en" class="booting">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0c0f0e" />
+    <meta name="description" content="A simple, focused inventory management dashboard." />
+    <title>Inventory — Management</title>
+    <style>
+        html.booting .app-shell { visibility: hidden; }
+        .startup-screen { position: fixed; z-index: 1000; inset: 0; display: none; place-items: center; padding: 24px; background: #100f0d; color: #eeeae0; font: 16px/1.5 'Segoe UI', Arial, sans-serif; }
+        html.booting .startup-screen { display: grid; }
+        .startup-card { width: min(100%, 420px); padding: 30px; border: 1px solid #34332b; border-radius: 14px; background: #171713; }
+        .startup-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; font-size: 22px; font-weight: 700; }
+        .startup-mark { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid #40533a; border-radius: 11px; background: #20261a; color: #c1ce9c; }
+        .startup-mark svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        .startup-card h1 { margin: 0 0 5px; font-size: 21px; }
+        .startup-copy { margin: 0 0 22px; color: #b8b4a8; font-size: 14px; }
+        .startup-checks { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+        .startup-check { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; color: #d0d0c7; }
+        .startup-icon { display: grid; width: 22px; height: 22px; place-items: center; border: 1px solid #45443a; border-radius: 50%; color: #a9a698; font-size: 12px; }
+        .startup-check.is-checking .startup-icon { border: 2px solid #4b4a3f; border-top-color: #c1ce9c; color: transparent; animation: startup-spin .8s linear infinite; }
+        .startup-check.is-ready .startup-icon { border-color: #536542; background: #27301e; color: #d2e4b2; }
+        .startup-check.is-warning .startup-icon { border-color: #69553b; background: #30271b; color: #f0ca8c; }
+        .startup-check strong { display: block; font-size: 14px; }
+        .startup-check small { display: block; margin-top: 1px; color: #9b988e; font-size: 12px; }
+        .startup-actions { display: none; gap: 10px; margin-top: 22px; }
+        .startup-screen.has-error .startup-actions { display: grid; }
+        .startup-actions button { width: 100%; min-height: 44px; border: 1px solid #89996c; border-radius: 7px; background: #bdca97; color: #171a12; font: inherit; font-weight: 700; cursor: pointer; }
+        .startup-actions .startup-continue { border-color: #45443a; background: #21211b; color: #e2dfd5; }
+        @keyframes startup-spin { to { transform: rotate(360deg); } }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link id="font-cdn" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet" media="print">
+    <link id="app-stylesheet" rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+    <section class="startup-screen" id="startup-screen" role="status" aria-live="polite" aria-label="Preparing inventory">
+        <div class="startup-card">
+            <div class="startup-brand">
+                <span class="startup-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 8 9-5 9 5-9 5-9-5Z"/><path d="M5 10v7l7 4 7-4v-7M9 12.5v5M12 14v5M15 12.5v5"/></svg></span>
+                <span>Inventory</span>
+            </div>
+            <h1 id="startup-title">Getting things ready</h1>
+            <p class="startup-copy" id="startup-copy">Checking your connection and preparing your inventory…</p>
+            <ul class="startup-checks">
+                <li class="startup-check is-checking" id="check-backend"><span class="startup-icon" aria-hidden="true">·</span><span><strong>Database connection</strong><small>Checking the inventory service</small></span></li>
+                <li class="startup-check is-checking" id="check-font"><span class="startup-icon" aria-hidden="true">·</span><span><strong>Font service</strong><small>Checking the font CDN</small></span></li>
+                <li class="startup-check is-checking" id="check-assets"><span class="startup-icon" aria-hidden="true">·</span><span><strong>App files</strong><small>Loading the interface</small></span></li>
+            </ul>
+            <div class="startup-actions">
+                <button class="startup-retry" id="startup-retry" type="button">Check again</button>
+                <button class="startup-continue" id="startup-continue" type="button">Continue with saved inventory</button>
+            </div>
+        </div>
+    </section>
+    <div class="app-shell">
+        <main class="main-content" id="inventory">
+            <header class="topbar">
+                <div class="breadcrumbs">
+                    <span class="inventory-brand" role="img" aria-label="Inventory"><svg viewBox="0 0 24 24"
+                            aria-hidden="true">
+                            <path d="m3 8 9-5 9 5-9 5-9-5Z" />
+                            <path d="M5 10v7l7 4 7-4v-7M9 12.5v5M12 14v5M15 12.5v5" />
+                        </svg></span>
+                </div>
+                <div class="sync-status" id="sync-status" role="status" aria-live="polite">
+                    <span id="sync-label">Connecting…</span>
+                </div>
+                <div class="topbar-right"><span class="today-label" id="today-label"></span></div>
+            </header>
+
+            <section class="page-content">
+                <div class="page-heading">
+                    <div>
+                        <h1>Your inventory</h1>
+                        <p class="page-subtitle">Here’s what you’ve got on hand. Add or update things as they change.
+                        </p>
+                    </div>
+                    <button class="button button-primary" id="add-item-button" type="button" aria-label="Add an item">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        <span>Add an item</span>
+                    </button>
+                </div>
+
+                <div class="stats-grid" aria-label="Inventory summary">
+                    <article class="stat-card">
+                        <div class="stat-icon stat-icon-green"><svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M4 7 12 3l8 4v10l-8 4-8-4V7Z" />
+                                <path d="m4.5 7.3 7.5 4 7.5-4M12 21V11" />
+                            </svg></div>
+                        <div>
+                            <p class="stat-label">Total items</p>
+                            <p class="stat-value" id="total-items">—</p>
+                        </div>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-icon stat-icon-purple"><svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="12" r="8.5" />
+                                <path d="M12 7v5l3.5 2" />
+                            </svg></div>
+                        <div>
+                            <p class="stat-label">Updated</p>
+                            <p class="stat-value stat-value-small" id="last-updated">—</p>
+                        </div>
+                    </article>
+                </div>
+
+                <section class="inventory-panel" aria-labelledby="inventory-title">
+                    <div class="panel-header">
+                        <div class="panel-title-group">
+                            <div class="panel-title-row">
+                                <h2 id="inventory-title">Your items</h2><span class="item-count"
+                                    id="visible-count">0</span>
+                            </div>
+                            <p>Select an item to see the full details.</p>
+                        </div>
+                        <label class="search-box">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="10.8" cy="10.8" r="6.8" />
+                                <path d="m16 16 4.2 4.2" />
+                            </svg>
+                            <input id="search-input" type="search" placeholder="Find an item..."
+                                aria-label="Find an inventory item" />
+                            <kbd>/</kbd>
+                        </label>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="product-column">Product</th>
+                                    <th>Size</th>
+                                    <th>Colour</th>
+                                    <th>Description</th>
+                                    <th class="actions-column"><span class="sr-only">Actions</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-body"></tbody>
+                        </table>
+                        <div class="loading-state" id="loading-state"><span class="spinner"></span><span>Loading your
+                                inventory...</span></div>
+                        <div class="empty-state hidden" id="empty-state">
+                            <div class="empty-icon"><svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M4 7 12 3l8 4v10l-8 4-8-4V7Z" />
+                                    <path d="m4.5 7.3 7.5 4 7.5-4M12 21V11" />
+                                </svg></div>
+                            <h3 id="empty-title">Nothing here yet</h3>
+                            <p id="empty-copy">Add your first item to start building your inventory.</p>
+                            <button class="button button-secondary" id="empty-add-button" type="button"><svg
+                                    viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 5v14M5 12h14" />
+                                </svg> Add your first item</button>
+                        </div>
+                    </div>
+                    <footer class="table-footer">
+                        <span id="table-summary">Showing 0 items</span>
+                        <div class="table-footer-actions">
+                            <nav class="pagination hidden" id="pagination" aria-label="Inventory pages">
+                                <button class="pagination-button" id="previous-page" type="button"
+                                    aria-label="Previous page" title="Previous page"><svg viewBox="0 0 24 24"
+                                        aria-hidden="true">
+                                        <path d="m15 18-6-6 6-6" />
+                                    </svg></button>
+                                <span class="page-indicator" id="page-indicator" aria-live="polite">Page 1 of 1</span>
+                                <button class="pagination-button" id="next-page" type="button" aria-label="Next page"
+                                    title="Next page"><svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="m9 18 6-6-6-6" />
+                                    </svg></button>
+                            </nav>
+                            <button class="text-button" id="refresh-button" type="button"><svg viewBox="0 0 24 24"
+                                    aria-hidden="true">
+                                    <path d="M20 7v5h-5M4 17v-5h5" />
+                                    <path d="M5.6 9a7 7 0 0 1 11.8-2L20 12M4 12l2.6 5a7 7 0 0 0 11.8-2" />
+                                </svg> Refresh</button>
+                        </div>
+                    </footer>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <dialog class="item-dialog" id="item-dialog" aria-labelledby="dialog-title">
+        <form id="item-form" novalidate>
+            <div class="dialog-heading">
+                <div>
+                    <div class="eyebrow"><span class="eyebrow-line"></span> INVENTORY</div>
+                    <h2 id="dialog-title">Add an item</h2>
+                    <p>Fill in the details below to keep your stock up to date.</p>
+                </div>
+                <button class="icon-button dialog-close" id="close-dialog" type="button" aria-label="Close dialog"><svg
+                        viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m6 6 12 12M18 6 6 18" />
+                    </svg></button>
+            </div>
+            <input id="item-id" type="hidden" />
+            <div class="form-grid">
+                <label class="field field-full"><span>Item name <i>*</i></span><input id="item-name" name="name"
+                        type="text" placeholder="e.g. Everyday tote bag" required maxlength="120" /><small
+                        class="field-error" id="name-error"></small></label>
+                <label class="field"><span>Size <i>*</i></span><input id="item-size" name="size" type="number"
+                        placeholder="e.g. 24" min="0" step="1" required /><small class="field-hint">Enter a size or
+                        quantity.</small><small class="field-error" id="size-error"></small></label>
+                <label class="field"><span>Colour <i>*</i></span>
+                    <div class="color-input-wrap"><input id="item-colour" name="colour" type="text"
+                            placeholder="e.g. Sage green" required maxlength="60" /><input id="colour-picker"
+                            class="color-picker" type="color" value="#83a98a" aria-label="Choose a colour swatch" />
+                    </div><small class="field-error" id="colour-error"></small>
+                </label>
+                <label class="field field-full"><span>Description <i>*</i></span><textarea id="item-description"
+                        name="description" placeholder="Add a few details about this item..." rows="4" required
+                        maxlength="500"></textarea><small class="field-meta"><span
+                            id="description-count">0</span>/500</small><small class="field-error"
+                        id="description-error"></small></label>
+            </div>
+            <div class="dialog-actions"><button class="button button-secondary" id="cancel-dialog"
+                    type="button">Cancel</button><button class="button button-primary" id="save-item-button"
+                    type="submit"><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg><span>Save item</span></button></div>
+        </form>
+    </dialog>
+
+    <dialog class="detail-dialog" id="detail-dialog" aria-labelledby="detail-title">
+        <div class="details-content">
+            <div class="dialog-heading">
+                <div>
+                    <div class="eyebrow"><span class="eyebrow-line"></span> ITEM DETAILS</div>
+                    <h2 id="detail-title">Item details</h2>
+                    <p>Full information for this inventory item.</p>
+                </div>
+                <button class="icon-button dialog-close" id="close-details" type="button"
+                    aria-label="Close details"><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m6 6 12 12M18 6 6 18" />
+                    </svg></button>
+            </div>
+            <dl class="details-grid">
+                <div class="detail-field">
+                    <dt>Name</dt>
+                    <dd id="detail-name"></dd>
+                </div>
+                <div class="detail-field">
+                    <dt>Size</dt>
+                    <dd id="detail-size"></dd>
+                </div>
+                <div class="detail-field">
+                    <dt>Colour</dt>
+                    <dd class="detail-colour"><span class="colour-dot" id="detail-colour-dot"></span><span
+                            id="detail-colour"></span></dd>
+                </div>
+                <div class="detail-field detail-description">
+                    <dt>Description</dt>
+                    <dd id="detail-description"></dd>
+                </div>
+            </dl>
+            <div class="dialog-actions"><button class="button button-secondary" id="close-details-button"
+                    type="button">Cancel</button><button class="button button-primary" id="edit-detail-button"
+                    type="button"><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z" />
+                    </svg> Edit item</button></div>
+        </div>
+    </dialog>
+
+    <dialog class="confirm-dialog" id="delete-dialog" aria-labelledby="delete-title">
+        <div class="delete-icon"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+            </svg></div>
+        <h2 id="delete-title">Delete this item?</h2>
+        <p id="delete-message">This action can’t be undone. This item will be permanently removed from your inventory.
+        </p>
+        <div class="dialog-actions"><button class="button button-secondary" id="keep-item-button"
+                type="button">Cancel</button><button class="button button-danger" id="confirm-delete-button"
+                type="button"><svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+                </svg> Delete item</button></div>
+    </dialog>
+
+    <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+</body>
+
+</html>
